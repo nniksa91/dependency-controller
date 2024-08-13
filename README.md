@@ -1,8 +1,13 @@
-# dependency
-// TODO(user): Add simple overview of use/purpose
+# dependency-controller
+The problem that everyone is having is basically non existance of the depends_on function in kubernetes.
 
 ## Description
-// TODO(user): An in-depth paragraph about your project and overview of use
+dependency-controller is a kubernetes controller that utilizes te "kubebuilder" for scaffolding and works with crds ( Custom Resource Definitions ) "
+How does it work: 
+
+It checks for the Dependency custom resource and if there are any it checks for dependency and dependant values to decide which deployment needs to depend on which. 
+
+And in cases then dependency is not fully ready it keeps dependant deployment scaled to 0, once the dependency deployments get's to fully running state it rescales the dependant deployment to desired number of replicas.
 
 ## Getting Started
 

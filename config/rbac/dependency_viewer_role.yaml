@@ -1,0 +1,23 @@
+# permissions for end users to view dependencies.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: dependency
+    app.kubernetes.io/managed-by: kustomize
+  name: dependency-viewer-role
+rules:
+- apiGroups:
+  - core.example.com
+  resources:
+  - dependencies
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - core.example.com
+  resources:
+  - dependencies/status
+  verbs:
+  - get

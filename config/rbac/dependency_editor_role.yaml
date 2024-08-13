@@ -1,0 +1,27 @@
+# permissions for end users to edit dependencies.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: dependency
+    app.kubernetes.io/managed-by: kustomize
+  name: dependency-editor-role
+rules:
+- apiGroups:
+  - core.example.com
+  resources:
+  - dependencies
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.example.com
+  resources:
+  - dependencies/status
+  verbs:
+  - get

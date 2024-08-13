@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dependency-controller
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dependency-controller
+  template:
+    metadata:
+      labels:
+        app: dependency-controller
+    spec:
+      serviceAccountName: dependency-controller
+      containers:
+        - name: manager
+          image: dependency-controller:v1
+          command:
+            - /manager
+          ports:
+            - containerPort: 8080
+              name: metrics
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 64Mi

@@ -18,24 +18,5 @@ rules:
   resources:
   - dependencies
   verbs:
-  - create
-  - delete
   - get
   - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - core.example.com
-  resources:
-  - dependencies/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - core.example.com
-  resources:
-  - dependencies/status
-  verbs:
-  - get
-  - patch
-  - update

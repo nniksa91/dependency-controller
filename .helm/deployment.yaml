@@ -13,10 +13,10 @@ spec:
       labels:
         app: dependency-controller
     spec:
-      serviceAccountName: dependency-controller
+      serviceAccountName: dependency-controller-sa
       containers:
         - name: manager
-          image: dependency-controller:v1
+          image: dependency-controller:v5
           command:
             - /manager
           ports:

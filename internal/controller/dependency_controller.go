@@ -38,26 +38,33 @@ func (r *DependencyReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, err
 	}
 
-	// List all Dependency resources in the namespace
+	// List all Dependency resources across the namespace
 	var dependencyList corev1api.DependencyList
-	if err := r.List(ctx, &dependencyList, &client.ListOptions{Namespace: req.Namespace}); err != nil {
+	if err := r.List(ctx, &dependencyList); err != nil {
 		log.Error(err, "unable to list Dependency resources")
 		return ctrl.Result{}, err
 	}
 
 	// Iterate over all Dependency resources
 	for _, dependency := range dependencyList.Items {
-		// Determine if this deployment is the dependency deployment (pod1-deployment)
+		// Check if this deployment matches any of the Dependency resources
 		if deployment.Name == dependency.Spec.Dependency {
+			log.Info("Found matching Dependency resource", "dependency", dependency.Name)
 			dependencyReady := deployment.Status.AvailableReplicas > 0
 
-			// Fetch the dependent deployment (pod2-deployment)
+			// Fetch the dependent deployment as specified in the Dependency resource
+			dependentNamespace := req.Namespace // assuming both deployments are in the same namespace
 			var dependentDeployment appsv1.Deployment
-			if err := r.Get(ctx, types.NamespacedName{Name: dependency.Spec.Dependent, Namespace: req.Namespace}, &dependentDeployment); err != nil {
-				log.Error(err, "unable to fetch Dependent deployment")
+			if err := r.Get(ctx, types.NamespacedName{Name: dependency.Spec.Dependent, Namespace: dependentNamespace}, &dependentDeployment); err != nil {
+				if errors.IsNotFound(err) {
+					log.Error(err, "Dependent deployment not found", "name", dependency.Spec.Dependent, "namespace", dependentNamespace)
+				} else {
+					log.Error(err, "Error fetching Dependent deployment", "name", dependency.Spec.Dependent, "namespace", dependentNamespace)
+				}
 				return ctrl.Result{}, err
 			}
 
+			// Perform actions based on the state of the dependency
 			if !dependencyReady {
 				// Scale down the dependent deployment if the dependency is not ready
 				if *dependentDeployment.Spec.Replicas != 0 {

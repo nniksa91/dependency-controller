@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: pod2-deployment
-  namespace: default
+  namespace: job-deployment
 spec:
   replicas: 1
   selector:

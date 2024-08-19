@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: pod1-deployment
-  namespace: default
+  namespace: job-deployment
 spec:
   replicas: 1
   selector:
@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: pod1
-          image: non-existent-image:latest  # This image does not exist, so the pod will fail to start
+          image: nginx:latest  # This image does not exist, so the pod will fail to start
           ports:
             - containerPort: 80
 

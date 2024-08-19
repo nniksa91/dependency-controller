@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: dependency-controller
-  namespace: default
+  namespace: job-deployment
 spec:
   replicas: 1
   selector:
@@ -16,7 +16,7 @@ spec:
       serviceAccountName: dependency-controller-sa
       containers:
         - name: manager
-          image: dependency-controller:v5
+          image: dependency-controller:jobdeployment
           command:
             - /manager
           ports:

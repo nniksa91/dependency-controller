@@ -1,8 +1,10 @@
 apiVersion: core.example.com/v1
 kind: Dependency
 metadata:
-  name: my-dependency
-  namespace: default
+  name: my-dependency2
+  namespace: job-deployment
 spec:
-  dependency: pod3-deployment
-  dependent: pod4-deployment
+  dependency: pod1-deployment
+  dependencyType: Deployment
+  dependent: pod2-deployment
+  dependentType: Deployment

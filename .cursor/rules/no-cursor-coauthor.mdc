@@ -13,3 +13,7 @@ When creating git commits or pull requests in this repository:
 - Commit as the human author only. Do not append agent identity to messages.
 
 If a tool or setting tries to inject such a trailer, omit it. The repo `commit-msg` hook under `.githooks/` strips matching lines as a backstop.
+
+## Related
+
+- Publishing: see `no-auto-push.mdc` — finish locally; never `git push` / force-push / `gh pr merge` unless the user explicitly asks. Do not rewrite history to scrub past attribution unless the user explicitly confirms a rewrite plan.

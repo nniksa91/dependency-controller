@@ -16,7 +16,7 @@ kubectl apply -f .helm/deployment.yaml
 - pods & jobs: `get` / `list` / `watch` only
 - `dependencies` + `/status`: `get` / `list` / `watch` / `update` / `patch` (no create/delete)
 
-For **custom resource** dependencies, edit placeholders in [`config/rbac/custom_dependency_reader_role.yaml`](../config/rbac/custom_dependency_reader_role.yaml) and merge those rules into `Role.yaml` (or bind that ClusterRole to `dependency-controller-sa`). Readiness-only CRs need `get`/`list`/`watch`; scalable dependents also need `update`/`patch`. Never use wildcards.
+For custom-resource dependencies, edit placeholders in [`config/rbac/custom_dependency_reader_role.yaml`](../config/rbac/custom_dependency_reader_role.yaml) and merge those rules into `Role.yaml` (or bind that ClusterRole to `dependency-controller-sa`). Readiness-only CRs need `get`/`list`/`watch`; scalable dependents also need `update`/`patch`. Never use wildcards.
 
 `deployment.yaml` runs the manager as non-root (`runAsUser: 65532`) with dropped capabilities, read-only rootfs, and `RuntimeDefault` seccomp. The ServiceAccount token is automounted only for this controller Pod. Metrics stay disabled unless you pass `--metrics-bind-address` (prefer HTTPS + `--metrics-secure=true`). Pin the image by digest in production.
 
@@ -34,11 +34,18 @@ Optional packs (Kustomize, off by default): NetworkPolicy (`config/network-polic
 
 ## Demo
 
+Minimal Deploy → Deploy sample:
+
 ```sh
 kubectl apply -f .helm/test/pod1-deployment.yaml
 kubectl apply -f .helm/test/pod2-deployment.yaml
 kubectl apply -f .helm/dependency-deployment.yaml
 kubectl get dependency my-dependency -o yaml
 ```
+
+Longer demos (scale gate thesis):
+
+- [`config/samples/scenario-postgres-app/`](../config/samples/scenario-postgres-app/) — Postgres + app; `./hack/test-postgres-app-dependency.sh`
+- [`config/samples/scenario-app-waits-for-db/`](../config/samples/scenario-app-waits-for-db/) — synthetic slow DB; `./hack/test-slow-db.sh`
 
 See [docs/crd-reference.md](../docs/crd-reference.md) for StatefulSet / Job / CR examples.

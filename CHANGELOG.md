@@ -17,10 +17,13 @@ and this project aims to follow [Semantic Versioning](https://semver.org/).
 - Enriched status (`reason`, `message`, `condition`, `observedGeneration`)
 - Unit tests for Deploy/STS/CR paths and readiness evaluators
 - GitHub Actions CI, issue/PR templates, Dependabot, and community docs
+- Demo scenarios: Postgres + app scale gate (`config/samples/scenario-postgres-app/`) and synthetic slow DB (`config/samples/scenario-app-waits-for-db/`), with `hack/` cluster test scripts
+- Optional zero-trust policy packs (`config/policy/`), NetworkPolicy component, and namespaced controller RBAC
 
 ### Changed
 
 - **Breaking:** `spec.dependency` / `spec.dependent` are no longer plain Deployment name strings
+- Documentation: clarified product thesis (scale gate vs probe delays / CrashLoop), support matrix, and API group naming
 
 ### Fixed
 

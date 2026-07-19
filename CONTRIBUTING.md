@@ -23,7 +23,8 @@ make run   # against your current kubeconfig after `make install`
 2. Create a branch from `main`.
 3. Keep PRs focused — one concern per PR when possible.
 4. Update docs/samples when you change API or behavior.
-5. Ensure CI is green.
+5. Update [`CHANGELOG.md`](CHANGELOG.md) under **`[Unreleased]`** for every user-facing change (API/behavior, features, fixes, security, install artifacts, samples, or operator-facing docs). Use Keep a Changelog categories (`Added` / `Changed` / `Fixed` / `Removed` / `Security`). Skip pure formatting or ops-only work that does not affect the product.
+6. Ensure CI is green.
 
 ### Code generation
 

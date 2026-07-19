@@ -76,7 +76,7 @@ func evaluateStarted(obj *unstructured.Unstructured, gvk schema.GroupVersionKind
 func evaluateCompleted(obj *unstructured.Unstructured, gvk schema.GroupVersionKind) Result {
 	switch {
 	case isKind(gvk, "Job"):
-		if hasCondition(obj, string(batchv1.JobComplete), "True") {
+		if hasCondition(obj, string(batchv1.JobComplete)) {
 			return Result{Ready: true, Reason: "JobComplete", Message: "job completed successfully"}
 		}
 		return Result{Ready: false, Reason: "JobNotComplete", Message: "job has not completed"}
@@ -112,7 +112,7 @@ func evaluateHealthy(obj *unstructured.Unstructured, gvk schema.GroupVersionKind
 		phase, _, _ := unstructured.NestedString(obj.Object, "status", "phase")
 		return Result{Ready: false, Reason: "PodNotReady", Message: fmt.Sprintf("pod not Ready (phase=%s)", phase)}
 	case isKind(gvk, "Job"):
-		if hasCondition(obj, string(batchv1.JobComplete), "True") {
+		if hasCondition(obj, string(batchv1.JobComplete)) {
 			return Result{Ready: true, Reason: "JobComplete", Message: "job completed"}
 		}
 		return Result{Ready: false, Reason: "JobNotHealthy", Message: "job not complete"}
@@ -122,7 +122,7 @@ func evaluateHealthy(obj *unstructured.Unstructured, gvk schema.GroupVersionKind
 }
 
 func evaluateCustom(obj *unstructured.Unstructured, readyWhen *corev1api.ReadyWhen) Result {
-	if hasCondition(obj, "Ready", "True") {
+	if hasCondition(obj, "Ready") {
 		return Result{Ready: true, Reason: "ReadyCondition", Message: "status.conditions Ready=True"}
 	}
 	if readyWhen != nil && readyWhen.JSONPath != "" {
@@ -154,10 +154,10 @@ func matchJSONPath(obj *unstructured.Unstructured, pathExpr, want string) (bool,
 }
 
 func podReady(obj *unstructured.Unstructured) bool {
-	return hasCondition(obj, string(corev1.PodReady), "True")
+	return hasCondition(obj, string(corev1.PodReady))
 }
 
-func hasCondition(obj *unstructured.Unstructured, condType, status string) bool {
+func hasCondition(obj *unstructured.Unstructured, condType string) bool {
 	conds, found, err := unstructured.NestedSlice(obj.Object, "status", "conditions")
 	if err != nil || !found {
 		return false
@@ -169,7 +169,7 @@ func hasCondition(obj *unstructured.Unstructured, condType, status string) bool 
 		}
 		t, _, _ := unstructured.NestedString(m, "type")
 		s, _, _ := unstructured.NestedString(m, "status")
-		if t == condType && s == status {
+		if t == condType && s == "True" {
 			return true
 		}
 	}

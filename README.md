@@ -108,7 +108,7 @@ Dependency CR  →  evaluate condition on dependency object
 | Deployment / StatefulSet / ReplicaSet | Scale to `0` (replicas remembered) |
 | Pod / Job / most CRs | Left unchanged; `status.reason=DependentNotScalable` |
 
-Custom dependency kinds need extra RBAC (`get`/`list`/`watch` on that API group; add `update`/`patch` only if the dependent is scaled). Built-ins are covered by the generated ClusterRole — see [docs/security.md](docs/security.md).
+Custom dependency kinds need extra RBAC (`get`/`list`/`watch` on that API group; add `update`/`patch` only if the dependent is scaled). Use the placeholder template [`config/rbac/custom_dependency_reader_role.yaml`](config/rbac/custom_dependency_reader_role.yaml) — never grant wildcards. Built-ins are covered by the generated ClusterRole — see [docs/security.md](docs/security.md).
 
 ## Development
 

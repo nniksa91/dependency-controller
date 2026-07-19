@@ -1,3 +1,8 @@
+# Least-privilege ClusterRole for the controller ServiceAccount.
+# Keep in sync with config/rbac/role.yaml (generated from +kubebuilder:rbac markers).
+# Do not add apiGroups/resources/verbs "*". For custom GVKs, copy rules from
+# config/rbac/custom_dependency_reader_role.yaml after replacing placeholders.
+# update on apps/* is required because internal/gate uses client.Update for replicas.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:

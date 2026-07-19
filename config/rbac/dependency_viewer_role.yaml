@@ -1,4 +1,5 @@
-# permissions for end users to view dependencies.
+# Human / CI permissions to view Dependency CRs.
+# Not bound by this project — never bind to the controller ServiceAccount.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:

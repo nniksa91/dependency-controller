@@ -1,0 +1,48 @@
+# Optional NetworkPolicy for the controller Pod.
+# Not enabled by default — see kustomization.yaml and docs/security.md.
+#
+# Intent: deny-by-default egress except cluster DNS + common API-server ports;
+# allow ingress only on health (8081) and metrics (8443) ports.
+#
+# Tighten further in production:
+# - Replace open API egress with your apiserver CIDR / EndpointSlice
+# - Restrict metrics ingress to the Prometheus namespace via namespaceSelector
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/name: dependency
+    app.kubernetes.io/managed-by: kustomize
+    control-plane: controller-manager
+  name: controller-manager
+  namespace: system
+spec:
+  podSelector:
+    matchLabels:
+      control-plane: controller-manager
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 8081
+        - protocol: TCP
+          port: 8443
+  egress:
+    # Cluster DNS (CoreDNS / kube-dns typically live in kube-system)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Kubernetes API server — port/CIDR vary by distribution; restrict when known
+    - ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 6443

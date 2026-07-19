@@ -1,0 +1,37 @@
+# OPTIONAL — not applied by default (not listed in kustomization.yaml).
+#
+# Copy this ClusterRole (or merge its rules into manager-role) when a Dependency CR
+# references a custom kind. Replace placeholders; never use apiGroups/resources/verbs "*".
+#
+# Readiness-only dependency (evaluate condition, no scale mutation):
+#   verbs: get, list, watch
+# Scalable dependent (gate scales replicas):
+#   verbs: get, list, watch, update, patch
+#
+# Bind only to the controller ServiceAccount (manager-rolebinding), not to human editor/viewer roles.
+#
+# Example enable (after editing placeholders):
+#   kubectl apply -f config/rbac/custom_dependency_reader_role.yaml
+#   # then bind, or paste rules into role.yaml / .helm/Role.yaml and re-apply
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: dependency
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/managed-by: kustomize
+  name: custom-dependency-reader-role
+rules:
+  # --- replace GROUP / RESOURCE / VERBS for each custom GVK ---
+  - apiGroups:
+      - REPLACE_ME.example.com # e.g. database.example.com
+    resources:
+      - replace_me_plural # e.g. databases
+    verbs:
+      - get
+      - list
+      - watch
+      # Uncomment only if this kind is used as a *scalable dependent*:
+      # - update
+      # - patch

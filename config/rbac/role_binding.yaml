@@ -1,3 +1,5 @@
+# Binds least-privilege manager-role only. Do not point roleRef at
+# dependency-editor-role, cluster-admin, or any wildcard ClusterRole.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:

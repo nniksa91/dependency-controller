@@ -65,9 +65,9 @@ Events map back to Dependency CRs by matching `spec.dependency` / `spec.dependen
 
 ## RBAC
 
-Generated ClusterRole covers pods, apps workloads, jobs, and the Dependency CRD (least privilege for built-ins).
+Generated `manager-role` ClusterRole covers pods, apps workloads, jobs, and the Dependency CRD (least privilege for built-ins — no wildcards). Editor/viewer ClusterRoles are for humans only and are not bound to the controller SA.
 
-For custom dependency kinds, extend the ClusterRole with the minimum verbs needed. Readiness-only dependencies:
+For custom dependency kinds, start from [`config/rbac/custom_dependency_reader_role.yaml`](../config/rbac/custom_dependency_reader_role.yaml). Readiness-only dependencies:
 
 ```yaml
 - apiGroups: ["db.example.com"]

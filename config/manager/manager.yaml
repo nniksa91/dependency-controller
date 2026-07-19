@@ -48,6 +48,8 @@ spec:
       #             operator: In
       #             values:
       #               - linux
+      # Required for in-cluster client auth to the API server.
+      automountServiceAccountToken: true
       securityContext:
         runAsNonRoot: true
         seccompProfile:

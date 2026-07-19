@@ -89,12 +89,12 @@ type DependencyStatus struct {
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
 }
 
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
-//+kubebuilder:printcolumn:name="Ready",type=boolean,JSONPath=`.status.dependencyReady`
-//+kubebuilder:printcolumn:name="ScaledDown",type=boolean,JSONPath=`.status.dependentScaledDown`
-//+kubebuilder:printcolumn:name="Reason",type=string,JSONPath=`.status.reason`
-//+kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Ready",type=boolean,JSONPath=`.status.dependencyReady`
+// +kubebuilder:printcolumn:name="ScaledDown",type=boolean,JSONPath=`.status.dependentScaledDown`
+// +kubebuilder:printcolumn:name="Reason",type=string,JSONPath=`.status.reason`
+// +kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
 
 // Dependency is the Schema for the dependencies API
 type Dependency struct {
@@ -105,7 +105,7 @@ type Dependency struct {
 	Status DependencyStatus `json:"status,omitempty"`
 }
 
-//+kubebuilder:object:root=true
+// +kubebuilder:object:root=true
 
 // DependencyList contains a list of Dependency
 type DependencyList struct {

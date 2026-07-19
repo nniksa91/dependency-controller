@@ -40,11 +40,11 @@ type DependencyReconciler struct {
 	watched map[schema.GroupVersionKind]bool
 }
 
-//+kubebuilder:rbac:groups=apps,resources=deployments;statefulsets;replicasets,verbs=get;list;watch;update;patch
-//+kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch
-//+kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch
-//+kubebuilder:rbac:groups=core.example.com,resources=dependencies,verbs=get;list;watch;update;patch
-//+kubebuilder:rbac:groups=core.example.com,resources=dependencies/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=apps,resources=deployments;statefulsets;replicasets,verbs=get;list;watch;update;patch
+// +kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch
+// +kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch
+// +kubebuilder:rbac:groups=core.example.com,resources=dependencies,verbs=get;list;watch;update;patch
+// +kubebuilder:rbac:groups=core.example.com,resources=dependencies/status,verbs=get;update;patch
 
 var builtInGVKs = []schema.GroupVersionKind{
 	{Group: "apps", Version: "v1", Kind: "Deployment"},

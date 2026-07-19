@@ -1,0 +1,15 @@
+---
+description: Never add Cursor/agent Co-authored-by trailers to git commits or PRs.
+alwaysApply: true
+---
+
+# No Cursor co-author attribution
+
+When creating git commits or pull requests in this repository:
+
+- **Never** add a `Co-authored-by: Cursor` trailer (or any variant spelling/casing).
+- **Never** add other Cursor/agent co-author trailers (e.g. `Co-authored-by: Cursor Agent`, `Co-authored-by: cursoragent`, Generated-by/Attributed-to Cursor).
+- Do **not** attribute commits or PRs to Cursor or any AI agent in the commit message body or trailers.
+- Commit as the human author only. Do not append agent identity to messages.
+
+If a tool or setting tries to inject such a trailer, omit it. The repo `commit-msg` hook under `.githooks/` strips matching lines as a backstop.

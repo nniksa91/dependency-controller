@@ -54,6 +54,12 @@ fix: avoid panic when replicas is nil
 docs: document readyWhen for custom resources
 ```
 
+Do not add `Co-authored-by: Cursor` (or other Cursor/agent) trailers. This repo ships a `commit-msg` hook that strips those lines. Enable it for your local clone once:
+
+```sh
+git config core.hooksPath .githooks
+```
+
 ## API compatibility
 
 Changes to the `Dependency` CRD are breaking for users. Call them out in the PR title/body and update `CHANGELOG.md`.

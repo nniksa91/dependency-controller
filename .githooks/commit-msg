@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Strip Cursor/agent Co-authored-by trailers from commit messages.
+# Enable for this clone: git config core.hooksPath .githooks
+
+set -euo pipefail
+
+msg_file="${1:?commit-msg hook requires path to commit message file}"
+
+tmp="$(mktemp)"
+trap 'rm -f "$tmp"' EXIT
+
+# Drop trailers that credit Cursor / Cursor Agent (any casing).
+# Also drop blank lines that would be left only as padding before EOF trailers
+# by rewriting the file without matching Co-authored-by lines.
+grep -Eiv '^[[:space:]]*Co-authored-by:.*[Cc]ursor' "$msg_file" >"$tmp" || true
+
+# If grep found no lines at all (empty result) but file was non-empty and
+# only contained Cursor trailers, allow empty subject to fail at commit time.
+mv "$tmp" "$msg_file"
+trap - EXIT

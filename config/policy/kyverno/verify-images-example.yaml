@@ -1,0 +1,53 @@
+# EXAMPLE ONLY — Cosign image verification via Kyverno.
+# Requires Kyverno + a Cosign public key (or keyless config) you control.
+# NOT enabled by default. Do NOT apply until placeholders are replaced.
+#
+# Image reference is an EXAMPLE for this project's GHCR path:
+#   ghcr.io/nniksa91/dependency-controller
+#
+# Apply (after editing): kubectl apply -f config/policy/kyverno/verify-images-example.yaml
+# Or: kubectl apply -k config/policy/kyverno
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: dependency-controller-verify-images-example
+  labels:
+    app.kubernetes.io/name: dependency
+    app.kubernetes.io/managed-by: kustomize
+  annotations:
+    policies.kyverno.io/title: EXAMPLE verify dependency-controller images
+    policies.kyverno.io/category: Supply Chain
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/description: >-
+      EXAMPLE ClusterPolicy: verify cosign signatures on the controller image.
+      Replace the public key and review imageReferences before Enforce.
+spec:
+  # Keep Audit until signatures and keys are validated end-to-end.
+  validationFailureAction: Audit
+  background: false
+  webhookTimeoutSeconds: 30
+  rules:
+    - name: verify-dependency-controller-image
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - dependency-system
+      verifyImages:
+        - imageReferences:
+            # EXAMPLE registry/repo — adjust if you mirror or rename the image.
+            - "ghcr.io/nniksa91/dependency-controller*"
+          attestors:
+            - entries:
+                - keys:
+                    # PLACEHOLDER: paste your cosign public key PEM below.
+                    publicKeys: |-
+                      -----BEGIN PUBLIC KEY-----
+                      REPLACE_WITH_YOUR_COSIGN_PUBLIC_KEY
+                      -----END PUBLIC KEY-----
+          mutateDigest: true
+          verifyDigest: true
+          required: true

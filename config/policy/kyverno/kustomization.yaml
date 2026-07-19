@@ -1,0 +1,5 @@
+# Optional — requires Kyverno. Not included from config/default.
+# Edit placeholders (groups, cosign public key) before Enforce.
+resources:
+  - restrict-dependency-creators.yaml
+  - verify-images-example.yaml

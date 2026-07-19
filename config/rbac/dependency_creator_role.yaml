@@ -1,0 +1,39 @@
+# Namespaced Role for humans / CI that may create Dependency CRs in one namespace.
+# Least privilege: create / update / get / list / watch (no delete).
+#
+# NOT included in the default install and NOT bound by this project.
+# Apply per tenant namespace and bind explicitly, e.g.:
+#
+#   kubectl apply -f config/rbac/dependency_creator_role.yaml -n <tenant-ns>
+#   kubectl create rolebinding dependency-creators \
+#     --role=dependency-creator-role \
+#     --group=dependency-creators \
+#     -n <tenant-ns>
+#
+# Prefer this (or dependency-viewer-role) over cluster-admin / edit ClusterRoles
+# for principals that only need Dependency CR access. See docs/security.md.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app.kubernetes.io/name: dependency
+    app.kubernetes.io/managed-by: kustomize
+  name: dependency-creator-role
+rules:
+- apiGroups:
+  - core.example.com
+  resources:
+  - dependencies
+  verbs:
+  - create
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.example.com
+  resources:
+  - dependencies/status
+  verbs:
+  - get

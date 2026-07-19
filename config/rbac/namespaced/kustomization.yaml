@@ -1,0 +1,5 @@
+# Optional single-namespace RBAC — NOT wired into config/default.
+# See README.md in this directory.
+resources:
+  - role.yaml
+  - role_binding.yaml

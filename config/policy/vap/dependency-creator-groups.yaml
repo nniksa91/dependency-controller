@@ -1,0 +1,51 @@
+# OPTIONAL — ValidatingAdmissionPolicy (Kubernetes built-in).
+# Not enabled by default. Edit allowed groups before applying.
+#
+# Denies CREATE/UPDATE on dependencies.core.example.com unless the user is in
+# an allowed group. Excludes the controller ServiceAccount so reconcile can patch.
+#
+# Apply: kubectl apply -k config/policy/vap
+# Docs:  docs/security.md
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: dependency-creator-groups
+  labels:
+    app.kubernetes.io/name: dependency
+    app.kubernetes.io/managed-by: kustomize
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["core.example.com"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["dependencies"]
+  matchConditions:
+    # Skip controller SA updates (status / object patch during reconcile).
+    # Adjust namespace/name if you change config/default namePrefix or namespace.
+    - name: exclude-controller-sa
+      expression: >-
+        !request.userInfo.username.startsWith('system:serviceaccount:dependency-system:')
+  validations:
+    # PLACEHOLDER: replace with your real groups (IdP / RBAC).
+    - expression: >-
+        request.userInfo.groups.exists(g,
+          g in ['system:masters', 'dependency-creators'])
+      message: >-
+        creating or updating Dependency requires membership in an allowed group
+        (see config/policy/vap placeholders)
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: dependency-creator-groups
+  labels:
+    app.kubernetes.io/name: dependency
+    app.kubernetes.io/managed-by: kustomize
+spec:
+  policyName: dependency-creator-groups
+  # Start with Audit; switch to [Deny] (or [Deny, Warn]) after validating.
+  validationActions: [Audit]
+  # Optional: limit to selected namespaces via matchResources.namespaceSelector

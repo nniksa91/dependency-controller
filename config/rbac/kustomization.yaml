@@ -22,4 +22,8 @@ resources:
 - dependency_viewer_role.yaml
 # Optional custom-CR template (placeholders) — apply manually after editing:
 #   custom_dependency_reader_role.yaml
+# Optional namespaced Role for humans who create Dependency CRs (no binding):
+#   kubectl apply -f dependency_creator_role.yaml -n <tenant-ns>
+# Single-namespace controller Role (replaces ClusterRole) — see namespaced/README.md:
+#   kubectl apply -k namespaced -n <controller-ns>
 

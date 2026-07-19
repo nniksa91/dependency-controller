@@ -1,11 +1,11 @@
 # Optional NetworkPolicy for the controller Pod.
 # Not enabled by default — see kustomization.yaml and docs/security.md.
 #
-# Intent: deny-by-default egress except cluster DNS + common API-server ports;
+# Intent: deny-by-default egress except cluster DNS + API-server ports;
 # allow ingress only on health (8081) and metrics (8443) ports.
 #
 # Tighten further in production:
-# - Replace open API egress with your apiserver CIDR / EndpointSlice
+# - Replace open API egress (no `to:`) with your apiserver CIDR / EndpointSlice
 # - Restrict metrics ingress to the Prometheus namespace via namespaceSelector
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -40,7 +40,30 @@ spec:
           port: 53
         - protocol: TCP
           port: 53
-    # Kubernetes API server — port/CIDR vary by distribution; restrict when known
+    # -----------------------------------------------------------------
+    # Kubernetes API server egress
+    #
+    # The rule below has NO `to:` selector, so destinations are unrestricted
+    # (equivalent to allowing 0.0.0.0/0 / ::/0 on ports 443 and 6443).
+    # That is intentional for a portable sample — replace it in production.
+    #
+    # Discover apiserver addresses, then swap in an ipBlock (examples):
+    #   kubectl -n default get endpoints kubernetes -o wide
+    #   kubectl get svc kubernetes -n default -o jsonpath='{.spec.clusterIP}{"\n"}'
+    #   # managed clusters: check control-plane / private endpoint CIDRs
+    #
+    # PRODUCTION EXAMPLE (uncomment, set CIDR(s), delete the open rule below):
+    # - to:
+    #     - ipBlock:
+    #         cidr: 10.96.0.1/32          # replace — apiserver ClusterIP or CIDR
+    #     # - ipBlock:
+    #     #     cidr: 172.16.0.0/28       # add more blocks if needed
+    #   ports:
+    #     - protocol: TCP
+    #       port: 443
+    #     - protocol: TCP
+    #       port: 6443
+    # -----------------------------------------------------------------
     - ports:
         - protocol: TCP
           port: 443

@@ -50,7 +50,7 @@ More examples: [`config/samples/`](config/samples/) · API details: [`docs/crd-r
 |-----|-------------|
 | [Architecture](docs/architecture.md) | Reconcile loop, watches, ready/gate packages |
 | [CRD reference](docs/crd-reference.md) | Spec, status, conditions, samples |
-| [Security](docs/security.md) | Secure install, RBAC, metrics, supply chain |
+| [Security](docs/security.md) | Secure install, PSA, RBAC, optional NetworkPolicy / admission / cosign |
 | [Helm-style manifests](.helm/README.md) | Flat YAML install without Kustomize |
 | [Contributing](CONTRIBUTING.md) | Dev setup and PR expectations |
 | [Changelog](CHANGELOG.md) | Notable changes |
@@ -130,6 +130,8 @@ internal/controller/    Reconciler + watches
 internal/ready/         Compose condition evaluation
 internal/gate/          Scale-to-zero / restore
 config/                 Kustomize install (CRD, RBAC, manager)
+config/network-policy/  Optional NetworkPolicy
+config/policy/          Optional VAP / Kyverno (off by default)
 config/samples/         Example Dependency CRs
 .helm/                  Flat YAML + demo Deployments
 docs/                   Architecture and API docs
@@ -149,4 +151,4 @@ docs/                   Architecture and API docs
 
 ## Security
 
-Private vulnerability reporting: [SECURITY.md](SECURITY.md). Operator hardening: [docs/security.md](docs/security.md).
+Private vulnerability reporting: [SECURITY.md](SECURITY.md). Operator hardening (PSA restricted, least-privilege RBAC, optional NetworkPolicy / ValidatingAdmissionPolicy / Kyverno+cosign examples): [docs/security.md](docs/security.md) · [`config/policy/`](config/policy/).

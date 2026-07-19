@@ -1,0 +1,4 @@
+# Optional — not included from config/default.
+# Requires Kubernetes 1.30+ ValidatingAdmissionPolicy.
+resources:
+  - dependency-creator-groups.yaml

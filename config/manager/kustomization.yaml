@@ -1,2 +1,13 @@
 resources:
 - manager.yaml
+
+# Image is set by `make deploy IMG=...` via `kustomize edit set image`.
+#
+# Production: pin by digest (preferred over floating tags):
+#   make deploy IMG=ghcr.io/nniksa91/dependency-controller@sha256:<digest>
+#
+# Or set an images: transformer manually (digest wins over tag), e.g.:
+# images:
+# - name: controller
+#   newName: ghcr.io/nniksa91/dependency-controller
+#   digest: sha256:REPLACE_ME

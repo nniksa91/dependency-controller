@@ -1,0 +1,57 @@
+# OPTIONAL Kyverno ClusterPolicy — EXAMPLE / template.
+# Requires Kyverno. Not enabled by default. Edit allowed groups before Enforce.
+#
+# Restricts CREATE/UPDATE on Dependency CRs to named subjects/groups.
+# Excludes the controller ServiceAccount in dependency-system.
+#
+# Apply: kubectl apply -k config/policy/kyverno
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: dependency-restrict-creators
+  labels:
+    app.kubernetes.io/name: dependency
+    app.kubernetes.io/managed-by: kustomize
+  annotations:
+    policies.kyverno.io/title: Restrict Dependency CR creators
+    policies.kyverno.io/category: Least Privilege
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Deny create/update of dependencies.core.example.com unless the principal
+      is in an allowed group. Placeholders must be edited before production use.
+spec:
+  # Start with Audit; switch to Enforce after validating in your cluster.
+  validationFailureAction: Audit
+  background: false
+  rules:
+    - name: allowed-dependency-creators
+      match:
+        any:
+          - resources:
+              kinds:
+                - Dependency
+              operations:
+                - CREATE
+                - UPDATE
+      exclude:
+        any:
+          - subjects:
+              - kind: ServiceAccount
+                name: dependency-controller-manager
+                namespace: dependency-system
+      validate:
+        message: >-
+          Dependency create/update denied. Bind users via dependency-creator-role
+          (namespaced) or an allowed group — see config/policy/kyverno placeholders.
+        deny:
+          conditions:
+            any:
+              # Deny when NONE of the user's groups are in the allow-list.
+              # PLACEHOLDER: replace dependency-creators with your real group(s).
+              # system:masters kept for break-glass; remove if undesired.
+              - key: "{{ request.userInfo.groups || `[]` }}"
+                operator: AllNotIn
+                value:
+                  - system:masters
+                  - dependency-creators

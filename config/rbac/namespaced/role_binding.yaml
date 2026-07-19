@@ -1,0 +1,21 @@
+# RoleBinding for single-namespace controller installs.
+# Names below match the pre-namePrefix manifests (same as config/rbac/role_binding.yaml).
+# After a normal `make deploy`, edit subjects to the transformed names:
+#   name: dependency-controller-manager
+#   namespace: dependency-system
+# (or apply under a kustomize overlay that sets namePrefix + namespace).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/name: dependency
+    app.kubernetes.io/managed-by: kustomize
+  name: manager-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: manager-role
+subjects:
+- kind: ServiceAccount
+  name: controller-manager
+  namespace: system

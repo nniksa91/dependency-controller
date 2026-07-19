@@ -18,6 +18,9 @@ spec:
       automountServiceAccountToken: true
       securityContext:
         runAsNonRoot: true
+        # Distroless static:nonroot UID — aligns with PSA restricted.
+        runAsUser: 65532
+        runAsGroup: 65532
         seccompProfile:
           type: RuntimeDefault
       containers:
@@ -30,6 +33,7 @@ spec:
             - --health-probe-bind-address=:8081
             # Metrics stay disabled (bind address 0) unless you explicitly enable them.
             # Prefer --metrics-bind-address=:8443 with --metrics-secure=true for production.
+            # Production: pin image by digest, e.g. ...@sha256:<digest>
           ports:
             - containerPort: 8081
               name: healthz

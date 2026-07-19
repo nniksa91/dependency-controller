@@ -20,8 +20,17 @@ resources:
 - ../manager
 # [NETWORK POLICY] Optional deny-by-default NetworkPolicy for the controller Pod.
 # Uncomment after reviewing egress (API server CIDR / DNS namespace) for your CNI.
+# Replace open 443/6443 egress with apiserver CIDRs — see config/network-policy comments.
 # See docs/security.md.
 #- ../network-policy
+# [ADMISSION / POLICY] Optional packs — NOT required for make deploy.
+# Requires cluster policy engines; edit placeholders (groups, cosign keys) first.
+# Prefer applying standalone so default install stays Kyverno-free:
+#   kubectl apply -k config/policy/vap
+#   kubectl apply -k config/policy/kyverno
+# Uncomment only after review (Kyverno CRDs must already exist for kyverno/):
+#- ../policy/vap
+#- ../policy/kyverno
 # [WEBHOOK] To enable webhook, uncomment all the sections with [WEBHOOK] prefix including the one in
 # crd/kustomization.yaml
 #- ../webhook

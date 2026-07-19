@@ -1,0 +1,57 @@
+# Optional single-namespace controller Role (same verbs as manager-role ClusterRole).
+# Use with role_binding.yaml instead of the cluster-scoped manager-rolebinding.
+# See README.md in this directory and docs/security.md (multi-tenant / single-ns).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: manager-role
+  labels:
+    app.kubernetes.io/name: dependency
+    app.kubernetes.io/managed-by: kustomize
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - replicasets
+  - statefulsets
+  verbs:
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - core.example.com
+  resources:
+  - dependencies
+  verbs:
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.example.com
+  resources:
+  - dependencies/status
+  verbs:
+  - get
+  - patch
+  - update

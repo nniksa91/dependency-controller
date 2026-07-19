@@ -18,9 +18,19 @@ kubectl apply -f .helm/deployment.yaml
 
 For **custom resource** dependencies, edit placeholders in [`config/rbac/custom_dependency_reader_role.yaml`](../config/rbac/custom_dependency_reader_role.yaml) and merge those rules into `Role.yaml` (or bind that ClusterRole to `dependency-controller-sa`). Readiness-only CRs need `get`/`list`/`watch`; scalable dependents also need `update`/`patch`. Never use wildcards.
 
-`deployment.yaml` runs the manager as non-root with dropped capabilities, read-only rootfs, and `RuntimeDefault` seccomp. The ServiceAccount token is automounted only for this controller Pod. Metrics stay disabled unless you pass `--metrics-bind-address` (prefer HTTPS + `--metrics-secure=true`).
+`deployment.yaml` runs the manager as non-root (`runAsUser: 65532`) with dropped capabilities, read-only rootfs, and `RuntimeDefault` seccomp. The ServiceAccount token is automounted only for this controller Pod. Metrics stay disabled unless you pass `--metrics-bind-address` (prefer HTTPS + `--metrics-secure=true`). Pin the image by digest in production.
 
-Optional NetworkPolicy (Kustomize component): `config/network-policy/`. Full RBAC / zero-trust notes: [docs/security.md](../docs/security.md).
+These manifests do **not** create a Namespace. For PSA **restricted**, label the target namespace (Kustomize `make deploy` already labels `dependency-system`):
+
+```sh
+kubectl label ns default \
+  pod-security.kubernetes.io/enforce=restricted \
+  pod-security.kubernetes.io/audit=restricted \
+  pod-security.kubernetes.io/warn=restricted \
+  --overwrite
+```
+
+Optional packs (Kustomize, off by default): NetworkPolicy (`config/network-policy/`), admission / cosign examples (`config/policy/`), single-namespace controller Role (`config/rbac/namespaced/`). Full notes: [docs/security.md](../docs/security.md).
 
 ## Demo
 

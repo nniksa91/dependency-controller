@@ -5,6 +5,12 @@ metadata:
     control-plane: controller-manager
     app.kubernetes.io/name: dependency
     app.kubernetes.io/managed-by: kustomize
+    # Pod Security Admission — restricted (enforce + warn/audit for visibility).
+    # Kustomize renames this Namespace to dependency-system via config/default.
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
   name: system
 ---
 apiVersion: apps/v1
@@ -52,6 +58,9 @@ spec:
       automountServiceAccountToken: true
       securityContext:
         runAsNonRoot: true
+        # Distroless static:nonroot UID — satisfies PSA restricted with runAsNonRoot.
+        runAsUser: 65532
+        runAsGroup: 65532
         seccompProfile:
           type: RuntimeDefault
       containers:

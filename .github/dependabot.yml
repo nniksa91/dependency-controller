@@ -14,12 +14,19 @@ updates:
           - minor
           - patch
     ignore:
-      # Major Kubernetes / controller-runtime jumps need a coordinated upgrade
-      # (Go version, codegen, CRDs, e2e), not one-off Dependabot PRs.
-      - dependency-name: "k8s.io/*"
-        update-types: ["version-update:semver-major"]
+      # Kubernetes / controller-runtime are upgraded manually as a coordinated
+      # stack (Go version, codegen, CRDs, e2e). Dependabot's 0.x semver handling
+      # can treat minor jumps as patch/minor and pull e.g. 0.30→0.36 via groups.
+      - dependency-name: "k8s.io/api"
+      - dependency-name: "k8s.io/apimachinery"
+      - dependency-name: "k8s.io/client-go"
       - dependency-name: "sigs.k8s.io/controller-runtime"
-        update-types: ["version-update:semver-major"]
+      # Broader k8s.io modules: block major+minor; patches only if Dependabot
+      # surfaces them outside the explicit list above.
+      - dependency-name: "k8s.io/*"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
       - dependency-name: "github.com/onsi/ginkgo/v2"
         update-types: ["version-update:semver-major"]
       - dependency-name: "github.com/onsi/gomega"

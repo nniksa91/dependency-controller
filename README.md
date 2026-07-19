@@ -1,5 +1,9 @@
 # dependency-controller
 
+<p align="center">
+  <img src="docs/images/dependency-controller-banner.png" alt="dependency-controller — Compose-style depends_on for Kubernetes" width="100%">
+</p>
+
 [![CI](https://github.com/nniksa91/dependency-controller/actions/workflows/ci.yml/badge.svg)](https://github.com/nniksa91/dependency-controller/actions/workflows/ci.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/nniksa91/dependency-controller)](https://goreportcard.com/report/github.com/nniksa91/dependency-controller)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -46,6 +50,7 @@ More examples: [`config/samples/`](config/samples/) · API details: [`docs/crd-r
 |-----|-------------|
 | [Architecture](docs/architecture.md) | Reconcile loop, watches, ready/gate packages |
 | [CRD reference](docs/crd-reference.md) | Spec, status, conditions, samples |
+| [Security](docs/security.md) | Secure install, RBAC, metrics, supply chain |
 | [Helm-style manifests](.helm/README.md) | Flat YAML install without Kustomize |
 | [Contributing](CONTRIBUTING.md) | Dev setup and PR expectations |
 | [Changelog](CHANGELOG.md) | Notable changes |
@@ -103,7 +108,7 @@ Dependency CR  →  evaluate condition on dependency object
 | Deployment / StatefulSet / ReplicaSet | Scale to `0` (replicas remembered) |
 | Pod / Job / most CRs | Left unchanged; `status.reason=DependentNotScalable` |
 
-Custom dependency kinds need extra RBAC (`get`/`list`/`watch` on that API group). Built-ins are covered by the generated ClusterRole.
+Custom dependency kinds need extra RBAC (`get`/`list`/`watch` on that API group; add `update`/`patch` only if the dependent is scaled). Built-ins are covered by the generated ClusterRole — see [docs/security.md](docs/security.md).
 
 ## Development
 
@@ -144,4 +149,4 @@ docs/                   Architecture and API docs
 
 ## Security
 
-See [SECURITY.md](SECURITY.md) for private vulnerability reporting.
+Private vulnerability reporting: [SECURITY.md](SECURITY.md). Operator hardening: [docs/security.md](docs/security.md).

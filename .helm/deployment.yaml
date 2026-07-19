@@ -14,15 +14,42 @@ spec:
         app: dependency-controller
     spec:
       serviceAccountName: dependency-controller-sa
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: manager
           image: dependency-controller:v5
           command:
             - /manager
+          args:
+            - --leader-elect
+            - --health-probe-bind-address=:8081
+            # Metrics stay disabled (bind address 0) unless you explicitly enable them.
+            # Prefer --metrics-bind-address=:8443 with --metrics-secure=true for production.
           ports:
-            - containerPort: 8080
-              name: metrics
+            - containerPort: 8081
+              name: healthz
               protocol: TCP
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
           resources:
             limits:
               cpu: 100m

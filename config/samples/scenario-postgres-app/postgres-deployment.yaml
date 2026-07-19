@@ -1,0 +1,58 @@
+# Real PostgreSQL: readinessProbe sets AvailableReplicas for the controller's
+# serviceHealthy check. That is the dependency-side signal — not a wait strategy
+# for the app (the app never uses probe delays; the Dependency CR scales it).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-postgres
+  namespace: default
+  labels:
+    app: demo-postgres
+    demo.dependency-controller/role: database
+    demo.dependency-controller/scenario: postgres-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-postgres
+  template:
+    metadata:
+      labels:
+        app: demo-postgres
+        demo.dependency-controller/role: database
+        demo.dependency-controller/scenario: postgres-app
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+              name: postgres
+          env:
+            - name: POSTGRES_PASSWORD
+              value: demopass
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_DB
+              value: demo
+            # Subdir avoids "directory exists but is not empty" with volume mounts.
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          # emptyDir is enough for a throwaway demo (data lost on pod delete).
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+                - -d
+                - demo
+            periodSeconds: 2
+            failureThreshold: 30
+      volumes:
+        - name: data
+          emptyDir: {}

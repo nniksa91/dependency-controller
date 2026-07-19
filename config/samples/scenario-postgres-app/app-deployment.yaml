@@ -1,0 +1,56 @@
+# App that requires PostgreSQL on startup (same image for pg_isready client tools).
+#
+# Without the Dependency gate: this pod schedules while Postgres is still initializing,
+# pg_isready fails → process exits 1 → kubelet restarts → CrashLoopBackOff.
+#
+# With the Dependency CR: controller keeps replicas=0 until demo-postgres is Available
+# (Postgres readinessProbe / pg_isready). The app then starts once — no liveness/readiness
+# probes, no initialDelaySeconds guessing. Ordering is the scale gate, not probe delays.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-pg-app
+  namespace: default
+  labels:
+    app: demo-pg-app
+    demo.dependency-controller/role: application
+    demo.dependency-controller/scenario: postgres-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-pg-app
+  template:
+    metadata:
+      labels:
+        app: demo-pg-app
+        demo.dependency-controller/role: application
+        demo.dependency-controller/scenario: postgres-app
+    spec:
+      containers:
+        - name: app
+          image: postgres:16-alpine
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: PGHOST
+              value: demo-postgres
+            - name: PGUSER
+              value: postgres
+            - name: PGDATABASE
+              value: demo
+            - name: PGPASSWORD
+              value: demopass
+          # Assume DB exists (typical migrate/ORM startup). No probes — the Dependency
+          # CR already prevented scheduling until Postgres AvailableReplicas ≥ 1.
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              echo "demo-pg-app: connecting to ${PGHOST}..."
+              if ! pg_isready -h "$PGHOST" -U "$PGUSER" -d "$PGDATABASE" -t 3; then
+                echo "FATAL: database not ready — exiting (would CrashLoop without Dependency gate)" >&2
+                exit 1
+              fi
+              echo "demo-pg-app: database up; staying running"
+              exec sleep infinity

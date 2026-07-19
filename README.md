@@ -44,6 +44,8 @@ When `db` has no ready/available replicas, `app` is scaled to `0`. When it recov
 
 More examples: [`config/samples/`](config/samples/) · API details: [`docs/crd-reference.md`](docs/crd-reference.md)
 
+**Scale gate instead of probe delays:** [`config/samples/scenario-postgres-app/`](config/samples/scenario-postgres-app/) — Postgres + app with **no** app probes; controller keeps the app at 0 until the DB is Available so you avoid CrashLoop and guessed `initialDelaySeconds`.
+
 ## Documentation
 
 | Doc | Description |

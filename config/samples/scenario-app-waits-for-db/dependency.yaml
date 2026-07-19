@@ -1,0 +1,17 @@
+apiVersion: core.example.com/v1
+kind: Dependency
+metadata:
+  name: app-waits-for-db
+  namespace: default
+  labels:
+    demo.dependency-controller/scenario: app-waits-for-db
+spec:
+  condition: serviceHealthy
+  dependency:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: demo-db
+  dependent:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: demo-app

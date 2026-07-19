@@ -65,15 +65,17 @@ Events map back to Dependency CRs by matching `spec.dependency` / `spec.dependen
 
 ## RBAC
 
-Generated ClusterRole covers pods, apps workloads, jobs, and the Dependency CRD.
+Generated ClusterRole covers pods, apps workloads, jobs, and the Dependency CRD (least privilege for built-ins).
 
-For custom dependency kinds, extend the ClusterRole, for example:
+For custom dependency kinds, extend the ClusterRole with the minimum verbs needed. Readiness-only dependencies:
 
 ```yaml
 - apiGroups: ["db.example.com"]
   resources: ["databases"]
   verbs: ["get", "list", "watch"]
 ```
+
+If the custom kind is a **scalable dependent**, also grant `update`/`patch`. Avoid wildcards. See [security.md](security.md).
 
 ## Limitations
 

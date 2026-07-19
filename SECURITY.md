@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Security fixes are applied to the latest release on `main` and the most recent tagged release when tags exist.
+Security fixes are applied to the latest commit on `main` and the most recent tagged release when tags exist. Older tags are best-effort only.
 
 ## Reporting a vulnerability
 
@@ -20,6 +20,18 @@ Include:
 - Affected versions / commit SHAs if known
 
 You should receive an acknowledgement within a few days. We will coordinate a fix and disclosure timeline.
+
+## Operator security posture
+
+| Area | Expectation |
+|------|-------------|
+| RBAC | Least privilege ClusterRole for built-in kinds; extend carefully for custom CRs |
+| Container | Distroless non-root image; restricted securityContext in deploy manifests |
+| Metrics | Off by default; HTTPS + authn/authz when enabled via Kustomize |
+| Secrets | Operator does not consume app Secrets; redact them in reports |
+| License | MIT — see [LICENSE](LICENSE) |
+
+Install and hardening details: [docs/security.md](docs/security.md).
 
 ## Scope notes
 

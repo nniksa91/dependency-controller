@@ -44,6 +44,11 @@ jobs:
       - name: Build
         run: make build
 
+      # Soft-fail until the module toolchain moves past Go 1.22 (stdlib findings dominate today).
+      - name: Vulnerability check
+        continue-on-error: true
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.1.4 ./...
+
   lint:
     name: Lint
     runs-on: ubuntu-latest

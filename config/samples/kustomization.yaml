@@ -1,4 +1,8 @@
 ## Append samples of your project ##
 resources:
 - core_v1_dependency.yaml
+# Extra examples (not applied by default via kustomize apply of this overlay alone if you trim the list):
+# - core_v1_dependency_statefulset.yaml
+# - core_v1_dependency_job.yaml
+# - core_v1_dependency_cr.yaml
 # +kubebuilder:scaffold:manifestskustomizesamples

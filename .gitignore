@@ -1,27 +1,42 @@
-# Binaries for programs and plugins
+# Binaries
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
-bin/*
+/bin/
 Dockerfile.cross
 
-# Test binary, built with `go test -c`
+# Test / coverage
 *.test
-
-# Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+cover.out
+coverage.html
 
-# Go workspace file
+# Go
 go.work
+go.work.sum
+vendor/
 
-# Kubernetes Generated files - skip generated files, except for vendored files
-!vendor/**/zz_generated.*
+# Build artifacts
+/dist/
 
-# editor and IDE paraphernalia
-.idea
-.vscode
+# Kubebuilder / envtest assets (downloaded locally)
+/bin/k8s/
+
+# Editor / IDE
+.idea/
+.vscode/
 *.swp
 *.swo
 *~
+.DS_Store
+
+# Cursor local agent rules (not part of the product)
+.cursor/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+*.pem

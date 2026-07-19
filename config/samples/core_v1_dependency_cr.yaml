@@ -1,0 +1,20 @@
+# Deployment waits for a custom resource using readyWhen JSONPath.
+# Grant the controller get/list/watch on this CRD's API group in RBAC.
+apiVersion: core.example.com/v1
+kind: Dependency
+metadata:
+  name: app-waits-for-database-cr
+  namespace: default
+spec:
+  condition: serviceHealthy
+  dependency:
+    apiVersion: db.example.com/v1
+    kind: Database
+    name: mydb
+  dependent:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: app
+  readyWhen:
+    jsonPath: "{.status.phase}"
+    value: "Ready"

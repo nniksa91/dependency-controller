@@ -1,0 +1,16 @@
+# Scalable dependent waits until a Job completes (serviceCompleted).
+apiVersion: core.example.com/v1
+kind: Dependency
+metadata:
+  name: app-waits-for-migrate
+  namespace: default
+spec:
+  condition: serviceCompleted
+  dependency:
+    apiVersion: batch/v1
+    kind: Job
+    name: migrate
+  dependent:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: app

@@ -14,7 +14,20 @@ spec:
     singular: dependency
   scope: Namespaced
   versions:
-  - name: v1
+  - additionalPrinterColumns:
+    - jsonPath: .status.dependencyReady
+      name: Ready
+      type: boolean
+    - jsonPath: .status.dependentScaledDown
+      name: ScaledDown
+      type: boolean
+    - jsonPath: .status.reason
+      name: Reason
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1
     schema:
       openAPIV3Schema:
         description: Dependency is the Schema for the dependencies API
@@ -37,31 +50,113 @@ spec:
           metadata:
             type: object
           spec:
-            description: DependencySpec defines the desired state of Dependency
+            description: DependencySpec defines the desired state of Dependency.
             properties:
+              condition:
+                default: serviceHealthy
+                description: |-
+                  Condition is the Compose-style readiness check applied to Dependency.
+                  serviceStarted | serviceHealthy | serviceCompleted
+                enum:
+                - serviceStarted
+                - serviceHealthy
+                - serviceCompleted
+                type: string
               dependency:
-                description: Dependency is the name of the deployment that the Dependent
-                  deployment relies on
-                type: string
+                description: Dependency is the object that must satisfy Condition
+                  before the dependent may run.
+                properties:
+                  apiVersion:
+                    description: APIVersion is the group/version of the referent (e.g.
+                      apps/v1, v1).
+                    type: string
+                  kind:
+                    description: Kind is the kind of the referent (e.g. Deployment,
+                      StatefulSet, Pod).
+                    type: string
+                  name:
+                    description: Name is the name of the referent.
+                    type: string
+                required:
+                - apiVersion
+                - kind
+                - name
+                type: object
               dependent:
-                description: Dependent is the name of the deployment that depends
-                  on the Dependency deployment
-                type: string
+                description: |-
+                  Dependent is the object gated until Dependency is ready.
+                  Scalable kinds (Deployment, StatefulSet, ReplicaSet) are scaled to 0 / restored.
+                  Other kinds are not mutated; status reports DependentNotScalable.
+                properties:
+                  apiVersion:
+                    description: APIVersion is the group/version of the referent (e.g.
+                      apps/v1, v1).
+                    type: string
+                  kind:
+                    description: Kind is the kind of the referent (e.g. Deployment,
+                      StatefulSet, Pod).
+                    type: string
+                  name:
+                    description: Name is the name of the referent.
+                    type: string
+                required:
+                - apiVersion
+                - kind
+                - name
+                type: object
+              desiredReplicas:
+                description: |-
+                  DesiredReplicas, when set, is the replica count used when scaling a scalable
+                  dependent back up. When unset, the controller restores the annotation value, or 1.
+                format: int32
+                type: integer
+              readyWhen:
+                description: |-
+                  ReadyWhen optionally overrides CR readiness with a JSONPath match.
+                  Used when Dependency is a custom resource without a standard Ready condition.
+                properties:
+                  jsonPath:
+                    description: JSONPath is a JSONPath expression evaluated against
+                      the dependency object (e.g. "{.status.phase}").
+                    type: string
+                  value:
+                    description: Value is the expected string form of the JSONPath
+                      result.
+                    type: string
+                required:
+                - jsonPath
+                - value
+                type: object
             required:
             - dependency
             - dependent
             type: object
           status:
-            description: DependencyStatus defines the observed state of Dependency
+            description: DependencyStatus defines the observed state of Dependency.
             properties:
+              condition:
+                description: Condition is the effective Compose condition used for
+                  evaluation.
+                type: string
               dependencyReady:
-                description: DependencyReady indicates if the Dependency deployment
-                  is fully ready
+                description: DependencyReady indicates if the Dependency object satisfies
+                  the Condition.
                 type: boolean
               dependentScaledDown:
-                description: DependentScaledDown indicates if the Dependent deployment
-                  is scaled down
+                description: DependentScaledDown indicates if a scalable Dependent
+                  is currently at 0 replicas.
                 type: boolean
+              message:
+                description: Message is a human-readable status detail.
+                type: string
+              observedGeneration:
+                description: ObservedGeneration is the .metadata.generation last processed
+                  by the controller.
+                format: int64
+                type: integer
+              reason:
+                description: Reason is a short CamelCase reason for the current state.
+                type: string
             required:
             - dependencyReady
             - dependentScaledDown

@@ -1,6 +1,9 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.15.0
   name: dependencies.core.example.com
 spec:
   group: core.example.com
@@ -11,24 +14,155 @@ spec:
     singular: dependency
   scope: Namespaced
   versions:
-    - name: v1
-      served: true
-      storage: true
-      schema:
-        openAPIV3Schema:
-          type: object
-          properties:
-            spec:
-              type: object
-              properties:
-                dependency:
-                  type: string
-                dependent:
-                  type: string
-            status:
-              type: object
-              properties:
-                dependencyReady:
-                  type: boolean
-                dependentScaledDown:
-                  type: boolean
+  - additionalPrinterColumns:
+    - jsonPath: .status.dependencyReady
+      name: Ready
+      type: boolean
+    - jsonPath: .status.dependentScaledDown
+      name: ScaledDown
+      type: boolean
+    - jsonPath: .status.reason
+      name: Reason
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1
+    schema:
+      openAPIV3Schema:
+        description: Dependency is the Schema for the dependencies API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: DependencySpec defines the desired state of Dependency.
+            properties:
+              condition:
+                default: serviceHealthy
+                description: |-
+                  Condition is the Compose-style readiness check applied to Dependency.
+                  serviceStarted | serviceHealthy | serviceCompleted
+                enum:
+                - serviceStarted
+                - serviceHealthy
+                - serviceCompleted
+                type: string
+              dependency:
+                description: Dependency is the object that must satisfy Condition
+                  before the dependent may run.
+                properties:
+                  apiVersion:
+                    description: APIVersion is the group/version of the referent (e.g.
+                      apps/v1, v1).
+                    type: string
+                  kind:
+                    description: Kind is the kind of the referent (e.g. Deployment,
+                      StatefulSet, Pod).
+                    type: string
+                  name:
+                    description: Name is the name of the referent.
+                    type: string
+                required:
+                - apiVersion
+                - kind
+                - name
+                type: object
+              dependent:
+                description: |-
+                  Dependent is the object gated until Dependency is ready.
+                  Scalable kinds (Deployment, StatefulSet, ReplicaSet) are scaled to 0 / restored.
+                  Other kinds are not mutated; status reports DependentNotScalable.
+                properties:
+                  apiVersion:
+                    description: APIVersion is the group/version of the referent (e.g.
+                      apps/v1, v1).
+                    type: string
+                  kind:
+                    description: Kind is the kind of the referent (e.g. Deployment,
+                      StatefulSet, Pod).
+                    type: string
+                  name:
+                    description: Name is the name of the referent.
+                    type: string
+                required:
+                - apiVersion
+                - kind
+                - name
+                type: object
+              desiredReplicas:
+                description: |-
+                  DesiredReplicas, when set, is the replica count used when scaling a scalable
+                  dependent back up. When unset, the controller restores the annotation value, or 1.
+                format: int32
+                type: integer
+              readyWhen:
+                description: |-
+                  ReadyWhen optionally overrides CR readiness with a JSONPath match.
+                  Used when Dependency is a custom resource without a standard Ready condition.
+                properties:
+                  jsonPath:
+                    description: JSONPath is a JSONPath expression evaluated against
+                      the dependency object (e.g. "{.status.phase}").
+                    type: string
+                  value:
+                    description: Value is the expected string form of the JSONPath
+                      result.
+                    type: string
+                required:
+                - jsonPath
+                - value
+                type: object
+            required:
+            - dependency
+            - dependent
+            type: object
+          status:
+            description: DependencyStatus defines the observed state of Dependency.
+            properties:
+              condition:
+                description: Condition is the effective Compose condition used for
+                  evaluation.
+                type: string
+              dependencyReady:
+                description: DependencyReady indicates if the Dependency object satisfies
+                  the Condition.
+                type: boolean
+              dependentScaledDown:
+                description: DependentScaledDown indicates if a scalable Dependent
+                  is currently at 0 replicas.
+                type: boolean
+              message:
+                description: Message is a human-readable status detail.
+                type: string
+              observedGeneration:
+                description: ObservedGeneration is the .metadata.generation last processed
+                  by the controller.
+                format: int64
+                type: integer
+              reason:
+                description: Reason is a short CamelCase reason for the current state.
+                type: string
+            required:
+            - dependencyReady
+            - dependentScaledDown
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

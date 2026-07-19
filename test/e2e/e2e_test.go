@@ -24,7 +24,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/nniksa91/dependency-controller/test/utils"
+	"dependency-controller/test/utils"
 )
 
 const namespace = "dependency-system"

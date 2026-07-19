@@ -40,6 +40,11 @@ type DependencyReconciler struct {
 	watched map[schema.GroupVersionKind]bool
 }
 
+// Least-privilege manager-role (no wildcards). Regenerated via `make manifests`.
+// update on apps/* is required: internal/gate uses client.Update to set spec.replicas
+// (and original-replicas annotation). Prefer patch-only only after gate is rewritten to Patch.
+// Dependency CR: no create/delete — humans use dependency-editor-role. Controller updates status.
+// Custom GVKs: do not widen this role; use config/rbac/custom_dependency_reader_role.yaml.
 // +kubebuilder:rbac:groups=apps,resources=deployments;statefulsets;replicasets,verbs=get;list;watch;update;patch
 // +kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch
 // +kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch

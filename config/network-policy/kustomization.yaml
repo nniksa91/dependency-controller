@@ -1,0 +1,9 @@
+# Optional component — not included from config/default.
+#
+# Enable either:
+#   1) Add `- ../network-policy` under resources in config/default/kustomization.yaml
+#      (picks up namespace: dependency-system and namePrefix: dependency-)
+#   2) Or: kustomize build config/network-policy | kubectl apply -f -
+#      (set namespace/namePrefix yourself if not using config/default)
+resources:
+  - controller-manager.yaml

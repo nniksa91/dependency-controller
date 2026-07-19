@@ -25,9 +25,10 @@ You should receive an acknowledgement within a few days. We will coordinate a fi
 
 | Area | Expectation |
 |------|-------------|
-| RBAC | Least privilege ClusterRole for built-in kinds; extend carefully for custom CRs |
-| Container | Distroless non-root image; restricted securityContext in deploy manifests |
-| Metrics | Off by default; HTTPS + authn/authz when enabled via Kustomize |
+| RBAC | Least privilege ClusterRole for built-in kinds; no wildcards; human editor/viewer roles separate from controller SA |
+| Container | Distroless non-root image; read-only rootfs; drop ALL caps; RuntimeDefault seccomp |
+| Metrics | Off by default (helm); HTTPS + authn/authz when enabled via Kustomize |
+| Network | Optional NetworkPolicy component (`config/network-policy/`) |
 | Secrets | Operator does not consume app Secrets; redact them in reports |
 | License | MIT — see [LICENSE](LICENSE) |
 

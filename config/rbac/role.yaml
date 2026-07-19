@@ -5,13 +5,32 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
-  - apps
+  - ""
   resources:
-  - deployments
+  - pods
   verbs:
   - get
   - list
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - replicasets
+  - statefulsets
+  verbs:
+  - get
+  - list
+  - patch
   - update
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - get
+  - list
   - watch
 - apiGroups:
   - core.example.com
@@ -20,3 +39,14 @@ rules:
   verbs:
   - get
   - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.example.com
+  resources:
+  - dependencies/status
+  verbs:
+  - get
+  - patch
+  - update

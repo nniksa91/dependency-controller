@@ -5,5 +5,15 @@ metadata:
     app.kubernetes.io/name: dependency
     app.kubernetes.io/managed-by: kustomize
   name: dependency-sample
+  namespace: default
 spec:
-  # TODO(user): Add fields here
+  condition: serviceHealthy
+  dependency:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: pod1-deployment
+  dependent:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: pod2-deployment
+  # desiredReplicas: 2

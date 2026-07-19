@@ -1,15 +1,16 @@
+# Deployment waits for a StatefulSet (Compose-style depends_on with typed kinds).
 apiVersion: core.example.com/v1
 kind: Dependency
 metadata:
-  name: my-dependency
+  name: app-waits-for-sts
   namespace: default
 spec:
   condition: serviceHealthy
   dependency:
     apiVersion: apps/v1
-    kind: Deployment
-    name: pod1-deployment
+    kind: StatefulSet
+    name: db
   dependent:
     apiVersion: apps/v1
     kind: Deployment
-    name: pod2-deployment
+    name: app

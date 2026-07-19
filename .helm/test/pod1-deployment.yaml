@@ -1,3 +1,5 @@
+# Demo "dependency" Deployment for Dependency CR (spec.dependency).
+# Bad image → AvailableReplicas stays 0 → controller should keep the dependent at 0.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,7 +17,7 @@ spec:
     spec:
       containers:
         - name: pod1
-          image: non-existent-image:latest  # This image does not exist, so the pod will fail to start
+          image: non-existent-image:latest
           ports:
             - containerPort: 80
 

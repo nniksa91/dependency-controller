@@ -1,119 +1,147 @@
 # dependency-controller
-The problem that everyone is having is basically non existance of the depends_on function in kubernetes.
 
-## Description
-dependency-controller is a kubernetes controller that utilizes te "kubebuilder" for scaffolding and works with crds ( Custom Resource Definitions ) "
-How does it work: 
+[![CI](https://github.com/nniksa91/dependency-controller/actions/workflows/ci.yml/badge.svg)](https://github.com/nniksa91/dependency-controller/actions/workflows/ci.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/nniksa91/dependency-controller)](https://goreportcard.com/report/github.com/nniksa91/dependency-controller)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Go version](https://img.shields.io/badge/Go-1.22+-00ADD8?logo=go&logoColor=white)](go.mod)
 
-It checks for the Dependency custom resource and if there are any it checks for dependency and dependant values to decide which deployment needs to depend on which. 
+Kubernetes operator that brings **Docker Compose–style `depends_on`** to the cluster — with typed object references so you can gate Deployments, StatefulSets, Pods, Jobs, and custom resources.
 
-And in cases then dependency is not fully ready it keeps dependant deployment scaled to 0, once the dependency deployments get's to fully running state it rescales the dependant deployment to desired number of replicas.
+## Features
 
-## Getting Started
+- **Typed refs** — `apiVersion` + `kind` + `name` for both sides of the edge
+- **Compose conditions** — `serviceStarted`, `serviceHealthy`, `serviceCompleted`
+- **Custom resources** — Ready condition or `readyWhen` JSONPath
+- **Safe scale gate** — scalable dependents (`Deployment` / `StatefulSet` / `ReplicaSet`) scale to `0` and restore prior replicas
+- **Observable status** — `dependencyReady`, `reason`, `message`, and more
+- **Dynamic watches** — built-in kinds plus GVKs referenced by live CRs
+
+## Quick example
+
+```yaml
+apiVersion: core.example.com/v1
+kind: Dependency
+metadata:
+  name: app-waits-for-db
+  namespace: default
+spec:
+  condition: serviceHealthy
+  dependency:
+    apiVersion: apps/v1
+    kind: StatefulSet
+    name: db
+  dependent:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: app
+```
+
+When `db` has no ready/available replicas, `app` is scaled to `0`. When it recovers, `app` is restored.
+
+More examples: [`config/samples/`](config/samples/) · API details: [`docs/crd-reference.md`](docs/crd-reference.md)
+
+## Documentation
+
+| Doc | Description |
+|-----|-------------|
+| [Architecture](docs/architecture.md) | Reconcile loop, watches, ready/gate packages |
+| [CRD reference](docs/crd-reference.md) | Spec, status, conditions, samples |
+| [Helm-style manifests](.helm/README.md) | Flat YAML install without Kustomize |
+| [Contributing](CONTRIBUTING.md) | Dev setup and PR expectations |
+| [Changelog](CHANGELOG.md) | Notable changes |
+
+## Install
 
 ### Prerequisites
-- go version v1.22.0+
-- docker version 17.03+.
-- kubectl version v1.11.3+.
-- Access to a Kubernetes v1.11.3+ cluster.
 
-### To Deploy on the cluster
-**Build and push your image to the location specified by `IMG`:**
+- Go 1.22+
+- Docker (or compatible)
+- `kubectl` and a Kubernetes 1.30+ cluster
+- `make`
+
+### Deploy with Kustomize
 
 ```sh
-make docker-build docker-push IMG=<some-registry>/dependency:tag
+make docker-build docker-push IMG=<registry>/dependency-controller:<tag>
+make deploy IMG=<registry>/dependency-controller:<tag>
 ```
 
-**NOTE:** This image ought to be published in the personal registry you specified.
-And it is required to have access to pull the image from the working environment.
-Make sure you have the proper permission to the registry if the above commands don’t work.
-
-**Install the CRDs into the cluster:**
+### Local development
 
 ```sh
-make install
+make install   # CRDs
+make run       # manager against your kubeconfig
 ```
 
-**Deploy the Manager to the cluster with the image specified by `IMG`:**
+### Try the sample
 
 ```sh
-make deploy IMG=<some-registry>/dependency:tag
+kubectl apply -f .helm/test/pod1-deployment.yaml
+kubectl apply -f .helm/test/pod2-deployment.yaml
+kubectl apply -f config/samples/core_v1_dependency.yaml
+kubectl get dependency -o wide
 ```
 
-> **NOTE**: If you encounter RBAC errors, you may need to grant yourself cluster-admin
-privileges or be logged in as admin.
-
-**Create instances of your solution**
-You can apply the samples (examples) from the config/sample:
+### Uninstall
 
 ```sh
-kubectl apply -k config/samples/
-```
-
->**NOTE**: Ensure that the samples has default values to test it out.
-
-### To Uninstall
-**Delete the instances (CRs) from the cluster:**
-
-```sh
-kubectl delete -k config/samples/
-```
-
-**Delete the APIs(CRDs) from the cluster:**
-
-```sh
+kubectl delete -f config/samples/core_v1_dependency.yaml --ignore-not-found
+make undeploy
 make uninstall
 ```
 
-**UnDeploy the controller from the cluster:**
+## How it works (short)
 
-```sh
-make undeploy
+```
+Dependency CR  →  evaluate condition on dependency object
+               →  scale / restore scalable dependent
+               →  update status
 ```
 
-## Project Distribution
+| Dependent kind | When dependency is not ready |
+|----------------|------------------------------|
+| Deployment / StatefulSet / ReplicaSet | Scale to `0` (replicas remembered) |
+| Pod / Job / most CRs | Left unchanged; `status.reason=DependentNotScalable` |
 
-Following are the steps to build the installer and distribute this project to users.
+Custom dependency kinds need extra RBAC (`get`/`list`/`watch` on that API group). Built-ins are covered by the generated ClusterRole.
 
-1. Build the installer for the image built and published in the registry:
-
-```sh
-make build-installer IMG=<some-registry>/dependency:tag
-```
-
-NOTE: The makefile target mentioned above generates an 'install.yaml'
-file in the dist directory. This file contains all the resources built
-with Kustomize, which are necessary to install this project without
-its dependencies.
-
-2. Using the installer
-
-Users can just run kubectl apply -f <URL for YAML BUNDLE> to install the project, i.e.:
+## Development
 
 ```sh
-kubectl apply -f https://raw.githubusercontent.com/<org>/dependency/<tag or branch>/dist/install.yaml
+make test              # unit tests
+make lint              # golangci-lint
+make manifests generate
+make build
 ```
 
-## Contributing
-// TODO(user): Add detailed information on how you would like others to contribute to this project
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow.
 
-**NOTE:** Run `make help` for more information on all potential `make` targets
+## Project layout
 
-More information can be found via the [Kubebuilder Documentation](https://book.kubebuilder.io/introduction.html)
+```
+api/v1/                 CRD Go types
+cmd/                    Manager entrypoint
+internal/controller/    Reconciler + watches
+internal/ready/         Compose condition evaluation
+internal/gate/          Scale-to-zero / restore
+config/                 Kustomize install (CRD, RBAC, manager)
+config/samples/         Example Dependency CRs
+.helm/                  Flat YAML + demo Deployments
+docs/                   Architecture and API docs
+```
+
+## Compatibility
+
+| Component | Version |
+|-----------|---------|
+| Go | 1.22+ |
+| Kubernetes | 1.30+ (envtest / CI target) |
+| controller-runtime | v0.18.x |
 
 ## License
 
-Copyright 2024.
+[MIT](LICENSE) © Nikola Niksa
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+## Security
 
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
+See [SECURITY.md](SECURITY.md) for private vulnerability reporting.

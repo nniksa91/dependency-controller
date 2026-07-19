@@ -1,3 +1,5 @@
+# Demo "dependent" Deployment for Dependency CR (spec.dependent).
+# With pod1 unavailable, the controller should scale this to 0.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,6 +17,6 @@ spec:
     spec:
       containers:
         - name: pod2
-          image: nginx:latest  # A valid image
+          image: nginx:latest
           ports:
             - containerPort: 80

@@ -66,3 +66,5 @@ spec:
 | `config/samples/core_v1_dependency_statefulset.yaml` | Deploy → StatefulSet |
 | `config/samples/core_v1_dependency_job.yaml` | Deploy waits for Job (`serviceCompleted`) |
 | `config/samples/core_v1_dependency_cr.yaml` | Deploy → CR + `readyWhen` |
+| [`config/samples/scenario-postgres-app/`](../config/samples/scenario-postgres-app/) | **Real stack** — Postgres + app (no app probes); scale-to-zero avoids CrashLoop and static probe delays |
+| [`config/samples/scenario-app-waits-for-db/`](../config/samples/scenario-app-waits-for-db/) | Synthetic slow DB (nginx + init sleep) for a quick timeline demo |

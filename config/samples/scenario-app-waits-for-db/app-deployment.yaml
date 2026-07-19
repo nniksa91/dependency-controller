@@ -1,0 +1,29 @@
+# Demo app: fast-start nginx. Desired replicas=1; controller scales to 0 until demo-db is healthy.
+# No liveness/readiness probes — ordering is the Dependency CR scale gate, not probe delays.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-app
+  namespace: default
+  labels:
+    app: demo-app
+    demo.dependency-controller/role: application
+    demo.dependency-controller/scenario: app-waits-for-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-app
+  template:
+    metadata:
+      labels:
+        app: demo-app
+        demo.dependency-controller/role: application
+    spec:
+      containers:
+        - name: app
+          image: nginx:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+              name: http

@@ -4,6 +4,8 @@
 
 Mirror Docker Compose `depends_on` in Kubernetes: gate a **dependent** object until a **dependency** object satisfies a named condition. Both sides are typed (`apiVersion` / `kind` / `name`).
 
+The controller **avoids CrashLoop and static probe delays** by not running the app until the dependency is Available — dependents do not need guessed `initialDelaySeconds` / failure thresholds waiting for a DB.
+
 ## Components
 
 ```mermaid

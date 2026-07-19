@@ -1,0 +1,17 @@
+apiVersion: core.example.com/v1
+kind: Dependency
+metadata:
+  name: postgres-app
+  namespace: default
+  labels:
+    demo.dependency-controller/scenario: postgres-app
+spec:
+  condition: serviceHealthy
+  dependency:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: demo-postgres
+  dependent:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: demo-pg-app

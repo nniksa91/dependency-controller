@@ -1,0 +1,50 @@
+# Demo DB: slow to become ready (init sleep), then a light nginx stand-in.
+# ReadinessProbe drives AvailableReplicas for serviceHealthy — not an app wait strategy.
+# Without the controller, a fast app would start while this is still initializing.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-db
+  namespace: default
+  labels:
+    app: demo-db
+    demo.dependency-controller/role: database
+    demo.dependency-controller/scenario: app-waits-for-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-db
+  template:
+    metadata:
+      labels:
+        app: demo-db
+        demo.dependency-controller/role: database
+    spec:
+      initContainers:
+        - name: slow-start
+          image: nginx:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - 'echo "demo-db init sleeping 45s"; sleep 45; echo "demo-db init done"'
+      containers:
+        - name: db
+          image: nginx:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 1
+            periodSeconds: 2
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10

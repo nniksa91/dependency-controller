@@ -45,7 +45,7 @@ var _ = Describe("Dependency Controller", func() {
 	ctx := context.Background()
 	crKey := types.NamespacedName{Name: depName, Namespace: ns}
 
-	makeDeploy := func(name string, replicas *int32, available int32) *appsv1.Deployment {
+	makeDeploy := func(name string, replicas *int32) *appsv1.Deployment {
 		return &appsv1.Deployment{
 			ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: ns},
 			Spec: appsv1.DeploymentSpec{
@@ -58,7 +58,7 @@ var _ = Describe("Dependency Controller", func() {
 					},
 				},
 			},
-			Status: appsv1.DeploymentStatus{AvailableReplicas: available},
+			Status: appsv1.DeploymentStatus{AvailableReplicas: 0},
 		}
 	}
 
@@ -111,8 +111,8 @@ var _ = Describe("Dependency Controller", func() {
 
 	It("scales dependent Deployment to 0 when dependency is not ready", func() {
 		c := newFakeClient(
-			makeDeploy(dependencyN, ptr.To(int32(1)), 0),
-			makeDeploy(dependentN, ptr.To(int32(3)), 0),
+			makeDeploy(dependencyN, ptr.To(int32(1))),
+			makeDeploy(dependentN, ptr.To(int32(3))),
 			makeCR(deployRef(dependencyN), deployRef(dependentN), nil, nil),
 		)
 		reconcileCR(c)
@@ -129,8 +129,8 @@ var _ = Describe("Dependency Controller", func() {
 	})
 
 	It("restores replicas when dependency becomes ready", func() {
-		dependency := makeDeploy(dependencyN, ptr.To(int32(1)), 0)
-		dependent := makeDeploy(dependentN, ptr.To(int32(3)), 0)
+		dependency := makeDeploy(dependencyN, ptr.To(int32(1)))
+		dependent := makeDeploy(dependentN, ptr.To(int32(3)))
 		c := newFakeClient(dependency, dependent, makeCR(deployRef(dependencyN), deployRef(dependentN), nil, nil))
 		reconcileCR(c)
 
@@ -150,7 +150,7 @@ var _ = Describe("Dependency Controller", func() {
 	It("gates Deployment on StatefulSet readiness", func() {
 		c := newFakeClient(
 			makeSTS(dependencyN, 0),
-			makeDeploy(dependentN, ptr.To(int32(2)), 0),
+			makeDeploy(dependentN, ptr.To(int32(2))),
 			makeCR(stsRef(dependencyN), deployRef(dependentN), nil, nil),
 		)
 		reconcileCR(c)
@@ -170,8 +170,8 @@ var _ = Describe("Dependency Controller", func() {
 	})
 
 	It("uses desiredReplicas over annotation", func() {
-		dependency := makeDeploy(dependencyN, ptr.To(int32(1)), 0)
-		dependent := makeDeploy(dependentN, ptr.To(int32(3)), 0)
+		dependency := makeDeploy(dependencyN, ptr.To(int32(1)))
+		dependent := makeDeploy(dependentN, ptr.To(int32(3)))
 		c := newFakeClient(dependency, dependent, makeCR(deployRef(dependencyN), deployRef(dependentN), ptr.To(int32(5)), nil))
 		reconcileCR(c)
 
@@ -192,7 +192,7 @@ var _ = Describe("Dependency Controller", func() {
 			},
 		}
 		c := newFakeClient(
-			makeDeploy(dependencyN, ptr.To(int32(1)), 0),
+			makeDeploy(dependencyN, ptr.To(int32(1))),
 			pod,
 			makeCR(deployRef(dependencyN), corev1api.ObjectRef{APIVersion: "v1", Kind: "Pod", Name: dependentN}, nil, nil),
 		)
@@ -219,7 +219,7 @@ var _ = Describe("Dependency Controller", func() {
 
 		c := newFakeClient(
 			db,
-			makeDeploy(dependentN, ptr.To(int32(2)), 0),
+			makeDeploy(dependentN, ptr.To(int32(2))),
 			makeCR(
 				corev1api.ObjectRef{APIVersion: "db.example.com/v1", Kind: "Database", Name: dependencyN},
 				deployRef(dependentN),
@@ -244,8 +244,8 @@ var _ = Describe("Dependency Controller", func() {
 
 	It("handles nil Spec.Replicas on dependent without panic", func() {
 		c := newFakeClient(
-			makeDeploy(dependencyN, ptr.To(int32(1)), 0),
-			makeDeploy(dependentN, nil, 0),
+			makeDeploy(dependencyN, ptr.To(int32(1))),
+			makeDeploy(dependentN, nil),
 			makeCR(deployRef(dependencyN), deployRef(dependentN), nil, nil),
 		)
 		Expect(func() { reconcileCR(c) }).NotTo(Panic())

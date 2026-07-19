@@ -4,14 +4,43 @@ updates:
     directory: /
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 3
     labels:
       - dependencies
+    groups:
+      go-minor-patch:
+        applies-to: version-updates
+        update-types:
+          - minor
+          - patch
+    ignore:
+      # Major Kubernetes / controller-runtime jumps need a coordinated upgrade
+      # (Go version, codegen, CRDs, e2e), not one-off Dependabot PRs.
+      - dependency-name: "k8s.io/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "sigs.k8s.io/controller-runtime"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "github.com/onsi/ginkgo/v2"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "github.com/onsi/gomega"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 2
     labels:
       - dependencies
+    groups:
+      github-actions:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+    ignore:
+      # Action major bumps often change Node runtime / inputs; batch separately.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]

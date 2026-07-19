@@ -40,3 +40,7 @@ vendor/
 .env.*
 !.env.example
 *.pem
+
+# Local kubeconfig (never commit)
+kubeconfig
+**/kubeconfig

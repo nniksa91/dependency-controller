@@ -54,7 +54,7 @@ fix: avoid panic when replicas is nil
 docs: document readyWhen for custom resources
 ```
 
-Do not add `Co-authored-by: Cursor` (or other Cursor/agent) trailers. This repo ships a `commit-msg` hook that strips those lines. Enable it for your local clone once:
+Do not add automated `Co-authored-by` trailers from IDE assistants. This repo ships a `commit-msg` hook that strips those lines. Enable it for your local clone once:
 
 ```sh
 git config core.hooksPath .githooks

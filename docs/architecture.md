@@ -2,9 +2,11 @@
 
 ## Goal
 
-Mirror Docker Compose `depends_on` in Kubernetes: gate a **dependent** object until a **dependency** object satisfies a named condition. Both sides are typed (`apiVersion` / `kind` / `name`).
+Mirror Docker Compose `depends_on` in Kubernetes: gate a **dependent** object until a **dependency** object satisfies a named condition. Both sides are typed (`apiVersion` / `kind` / `name`) and resolved in the **same namespace** as the `Dependency` CR.
 
-The controller **avoids CrashLoop and static probe delays** by not running the app until the dependency is Available — dependents do not need guessed `initialDelaySeconds` / failure thresholds waiting for a DB.
+The product thesis is a **scale gate**: keep scalable dependents at replicas `0` until the dependency is ready, so apps do not need guessed `initialDelaySeconds` / failure thresholds — and do not CrashLoop while waiting for a database or similar dependency.
+
+Gating mutates only scalable dependents (`Deployment` / `StatefulSet` / `ReplicaSet`). Other dependent kinds are observed only (`DependentNotScalable`).
 
 ## Components
 
@@ -72,7 +74,7 @@ Generated `manager-role` ClusterRole covers pods, apps workloads, jobs, and the 
 For custom dependency kinds, start from [`config/rbac/custom_dependency_reader_role.yaml`](../config/rbac/custom_dependency_reader_role.yaml). Readiness-only dependencies:
 
 ```yaml
-- apiGroups: ["db.example.com"]
+- apiGroups: ["db.example.com"]  # placeholder API group for your CRD
   resources: ["databases"]
   verbs: ["get", "list", "watch"]
 ```

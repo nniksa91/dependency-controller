@@ -37,4 +37,4 @@ Install and hardening details: [docs/security.md](docs/security.md).
 
 ## Scope notes
 
-This operator updates Kubernetes objects (primarily `spec.replicas` on scalable workloads). Misconfigured RBAC that grants the controller access to sensitive custom resources increases blast radius — treat ClusterRole rules as part of your security review.
+This operator updates Kubernetes objects (primarily `spec.replicas` on `Deployment` / `StatefulSet` / `ReplicaSet`). Misconfigured RBAC that grants the controller access to sensitive custom resources increases blast radius — treat ClusterRole rules as part of your security review. See the support matrix in [README.md](README.md).

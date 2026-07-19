@@ -1,24 +1,26 @@
 # Operator security guidance
 
-Technical controls for installing and operating **dependency-controller**. This is not legal advice.
+Technical controls for installing and operating **dependency-controller**. Not legal advice.
+
+**Defaults to remember:** least-privilege RBAC for built-in kinds (no wildcards), PSA restricted on the Kustomize install namespace, metrics off unless you enable them, optional NetworkPolicy / VAP / Kyverno packs off by default.
 
 ## Threat model (short)
 
-The controller can **read** referenced objects and **update/patch** scalable dependents (`Deployment` / `StatefulSet` / `ReplicaSet` replicas). Compromise or overly broad RBAC expands blast radius to any object the service account can mutate.
+The controller can **read** referenced objects and **update/patch** scalable dependents (`Deployment` / `StatefulSet` / `ReplicaSet` replicas). Overly broad RBAC expands blast radius to anything the service account can mutate.
 
-**Namespace trust boundary:** refs are resolved in the same namespace as the `Dependency` CR (`ObjectRef` has no namespace field). A principal who can create Dependency CRs in a namespace can point at any object name in that namespace the controller SA can read/mutate.
+**Namespace trust boundary:** refs resolve in the same namespace as the `Dependency` CR (`ObjectRef` has no namespace field). A principal who can create Dependency CRs there can point at any object name in that namespace the controller SA can read/mutate.
 
-**Multi-tenant warning:** with the default **ClusterRole**, the controller SA can scale workloads **cluster-wide**. Anyone who can create a `Dependency` in *any* namespace the controller reconciles can therefore drive scale mutations on Deployments/StatefulSets/ReplicaSets the SA can touch — not only in their own namespace. Do **not** grant untrusted users `dependency-editor-role`, cluster-admin, or broad `edit` on `dependencies.core.example.com`. Prefer the namespaced [`dependency-creator-role`](../config/rbac/dependency_creator_role.yaml) plus admission policies (below), or run a **single-namespace** controller ([`config/rbac/namespaced/`](../config/rbac/namespaced/)).
+**Multi-tenant warning:** the default **ClusterRole** lets the controller SA scale workloads **cluster-wide**. Anyone who can create a `Dependency` in a reconciled namespace can drive those mutations. Do **not** grant untrusted users `dependency-editor-role`, cluster-admin, or broad `edit` on `dependencies.core.example.com`. Prefer the namespaced [`dependency-creator-role`](../config/rbac/dependency_creator_role.yaml) plus admission policies (below), or a **single-namespace** controller ([`config/rbac/namespaced/`](../config/rbac/namespaced/)).
 
 ## Secure install checklist
 
-1. Install from a **pinned image digest** (or immutable tag you built and scanned), not `:latest` in production.
-2. Prefer the Kustomize path (`make deploy`) so metrics authn/authz RBAC and HTTPS metrics patches stay aligned.
-3. Confirm the Pod runs as non-root with dropped capabilities and `RuntimeDefault` seccomp (defaults in `config/manager` and `.helm/deployment.yaml`). The install namespace is labeled for PSA **restricted**.
-4. Keep the manager ServiceAccount's ClusterRole **least privilege**. Built-in rules cover only pods, apps workloads, jobs, and the `Dependency` CRD — **no** `resources: ["*"]` / `apiGroups: ["*"]` / `verbs: ["*"]`.
-5. Enable leader election in multi-replica installs (`--leader-elect`).
-6. Do **not** bind `cluster-admin` (or any wildcard ClusterRole) to the controller ServiceAccount.
-7. Optionally enable NetworkPolicy, VAP, and/or Kyverno packs after editing placeholders — see [Optional policy packs](#optional-policy-packs).
+1. Pin the image by **digest** (or an immutable tag you built and scanned); avoid `:latest` in production.
+2. Prefer Kustomize (`make deploy`) so metrics authn/authz RBAC and HTTPS metrics patches stay aligned.
+3. Confirm non-root, dropped capabilities, and `RuntimeDefault` seccomp (`config/manager`, `.helm/deployment.yaml`). Kustomize labels the install namespace for PSA **restricted**.
+4. Keep the manager ClusterRole least privilege: pods, apps workloads, jobs, and the `Dependency` CRD only — no `*` wildcards.
+5. Enable leader election for multi-replica installs (`--leader-elect`).
+6. Never bind `cluster-admin` (or any wildcard ClusterRole) to the controller ServiceAccount.
+7. Optionally enable NetworkPolicy, VAP, and/or Kyverno after editing placeholders — see [Optional policy packs](#optional-policy-packs).
 
 ## RBAC model (composability)
 
@@ -212,14 +214,14 @@ This operator does **not** mount or process application Secrets. Support tickets
 - Production: pin by digest, e.g. `IMG=registry.example.com/dependency-controller@sha256:…`.
 - Optional: Kyverno `verifyImages` EXAMPLE under [`config/policy/kyverno/verify-images-example.yaml`](../config/policy/kyverno/verify-images-example.yaml).
 
-## Gaps that need cluster / org action (outside default manifests)
+## Outside default manifests
 
-In-repo optional packs cover the *artifacts*; you still must apply and operate them:
+Optional packs are artifacts only — you still operate them:
 
-- Install/enable Kyverno (or rely on VAP only) and load Cosign keys
-- CNI that enforces NetworkPolicy + real apiserver CIDR allowlists
+- Install Kyverno (if used) and load Cosign keys
+- CNI that enforces NetworkPolicy + apiserver CIDR allowlists
 - IdP group mapping and periodic binding reviews
-- Choosing ClusterRole vs single-namespace Role for your tenancy model
+- ClusterRole vs single-namespace Role for your tenancy model
 
 ## Reporting issues
 
